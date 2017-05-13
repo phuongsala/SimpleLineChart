@@ -1,3 +1,12 @@
 <resources>
     <string name="app_name">SimpleLineChart</string>
+
+    <string name="txt_daily">View by Daily</string>
+    <string name="txt_monthly">View by Monthly</string>
+    <string name="txt_quarterly">View by Quarterly</string>
+
+    <string name="txt_chart_desc">Portfolios Chart</string>
+    <string name="txt_chart_no_data_desc">There is no data yet</string>
+
+    <string name="error_load_data">Oops, there was a problem with loading data!</string>
 </resources>
