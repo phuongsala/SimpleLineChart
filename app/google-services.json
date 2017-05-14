@@ -1,0 +1,42 @@
+{
+  "project_info": {
+    "project_number": "822234039894",
+    "firebase_url": "https://simplelinechart.firebaseio.com",
+    "project_id": "simplelinechart",
+    "storage_bucket": "simplelinechart.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:822234039894:android:ba5b4f321f37c27f",
+        "android_client_info": {
+          "package_name": "promiennam.co.simplelinechart"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "822234039894-1efun3llkea73p0qg99jo3gavd0nt2oe.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDtBd8D8DfIZbThyEkF1eygDB637jGcs3w"
+        }
+      ],
+      "services": {
+        "analytics_service": {
+          "status": 1
+        },
+        "appinvite_service": {
+          "status": 1,
+          "other_platform_oauth_client": []
+        },
+        "ads_service": {
+          "status": 2
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

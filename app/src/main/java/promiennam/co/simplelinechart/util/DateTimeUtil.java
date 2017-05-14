@@ -1,5 +1,7 @@
 package promiennam.co.simplelinechart.util;
 
+import android.util.Log;
+
 import java.text.DateFormat;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
@@ -28,13 +30,13 @@ public class DateTimeUtil {
 
     public String convertFloatDateToStringDate(float floatDate) {
         Date date = new Date((long) floatDate);
-        DateFormat dateFormat = new SimpleDateFormat("MMM dd yyyy");
+        DateFormat dateFormat = new SimpleDateFormat("MMM-dd-yyyy");
         return dateFormat.format(date);
     }
 
     public String convertFloatDateToMonth(float floatDate) {
         Date date = new Date((long) floatDate);
-        DateFormat dateFormat = new SimpleDateFormat("MMM");
+        DateFormat dateFormat = new SimpleDateFormat("MMM yyyy");
         return dateFormat.format(date);
     }
 
@@ -72,8 +74,12 @@ public class DateTimeUtil {
             Calendar c = Calendar.getInstance();
             c.setTime(date);
             int day = c.get(Calendar.DAY_OF_MONTH);
-            int month = c.get(Calendar.MONTH);
+            int month = c.get(Calendar.MONTH) + 1;
             int year = c.get(Calendar.YEAR);
+
+            if (day < 28) {
+                return false;
+            }
 
             if (month == 2) {
                 if (isLeapYear(year)) {
@@ -85,7 +91,8 @@ public class DateTimeUtil {
                         return true;
                     }
                 }
-            } else if (month == 1 || month == 3 || month == 5 || month == 7 || month == 8 || month == 10 || month == 12) {
+            } else if (month == 1 || month == 3 || month == 5 || month == 7
+                    || month == 8 || month == 10 || month == 12) {
                 if (day == 31) {
                     return true;
                 }
@@ -116,7 +123,7 @@ public class DateTimeUtil {
     public boolean isQuarterMonth(Date date) {
         Calendar c = Calendar.getInstance();
         c.setTime(date);
-        int month = c.get(Calendar.MONTH);
+        int month = c.get(Calendar.MONTH) + 1;
         if (month == 3 || month == 6 || month == 9 || month == 12) {
             return true;
         }

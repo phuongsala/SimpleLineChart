@@ -1,9 +1,5 @@
 package promiennam.co.simplelinechart.models;
 
-import android.os.DropBoxManager;
-
-import com.github.mikephil.charting.data.Entry;
-
 /**
  * Created by Phuong on 13-May-17.
  */

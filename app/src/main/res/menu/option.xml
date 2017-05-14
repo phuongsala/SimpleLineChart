@@ -1,15 +1,19 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto">
 
     <item
         android:id="@+id/daily"
+        app:showAsAction="collapseActionView"
         android:title="@string/txt_daily" />
 
     <item
         android:id="@+id/monthly"
+        app:showAsAction="collapseActionView"
         android:title="@string/txt_monthly" />
 
     <item
         android:id="@+id/quarterly"
+        app:showAsAction="collapseActionView"
         android:title="@string/txt_quarterly" />
 </menu>

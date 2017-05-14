@@ -3,25 +3,29 @@ package promiennam.co.simplelinechart.activities;
 import android.graphics.Color;
 import android.os.Bundle;
 import android.support.v7.app.AppCompatActivity;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
-import android.view.MotionEvent;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.github.mikephil.charting.charts.LineChart;
 import com.github.mikephil.charting.components.AxisBase;
-import com.github.mikephil.charting.components.Description;
 import com.github.mikephil.charting.components.Legend;
+import com.github.mikephil.charting.components.XAxis;
 import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.data.LineData;
 import com.github.mikephil.charting.data.LineDataSet;
 import com.github.mikephil.charting.formatter.IAxisValueFormatter;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.interfaces.datasets.ILineDataSet;
-import com.github.mikephil.charting.listener.ChartTouchListener;
-import com.github.mikephil.charting.listener.OnChartGestureListener;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
+import com.google.firebase.database.DatabaseReference;
+import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
@@ -37,34 +41,40 @@ import promiennam.co.simplelinechart.enums.ChartViewType;
 import promiennam.co.simplelinechart.models.Nav;
 import promiennam.co.simplelinechart.models.Portfolio;
 import promiennam.co.simplelinechart.util.DateTimeUtil;
+import promiennam.co.simplelinechart.util.DisplayUtil;
 
-public class MainActivity extends AppCompatActivity implements
-        OnChartGestureListener,
-        OnChartValueSelectedListener {
+public class HomeActivity extends AppCompatActivity implements OnChartValueSelectedListener {
 
     private LineChart mChart;
+    private TextView mChartDesc;
     private List<Portfolio> mPortfolioByDayList; // by day
     private List<Portfolio> mPortfolioByMonthList; // by month
     private List<Portfolio> mPortfolioByQuarterList; // by quarter
     private DateTimeUtil mDateTimeUtil;
-    private int mTotal; // total portfolios for each day
+
+    private float mCenterX; // centerX of screen
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_main);
+        setContentView(R.layout.activity_home);
+
         mChart = (LineChart) findViewById(R.id.line_chart);
-        mChart.setOnChartGestureListener(this);
+        mChart.setDrawGridBackground(true);
         mChart.setOnChartValueSelectedListener(this);
-        mChart.setDrawGridBackground(false);
+
+        mChartDesc = (TextView)findViewById(R.id.txt_chart_desc);
 
         mDateTimeUtil = new DateTimeUtil();
+
+        DisplayUtil displayUtil = new DisplayUtil();
+        mCenterX = displayUtil.getCenterX(this);
 
         loadData();
 
         setupChart();
 
-        displayChart(ChartViewType.DAY); // view by day at the first time
+        displayChart(ChartViewType.MONTH); // view by month at the first time
     }
 
     private List<Portfolio> loadData() {
@@ -131,6 +141,9 @@ public class MainActivity extends AppCompatActivity implements
             mPortfolioByMonthList.add(portfolioByMonth);
             mPortfolioByQuarterList.add(portfolioByQuarter);
         }
+
+        // test store to firebase
+        testStoreDataToFirebase();
     }
 
     private ArrayList<Entry> getValues(ChartViewType chartViewType, int index) {
@@ -166,15 +179,20 @@ public class MainActivity extends AppCompatActivity implements
         Legend legend = mChart.getLegend();
         legend.setForm(Legend.LegendForm.LINE);
 
-        Description desc = new Description();
-        desc.setText(getString(R.string.txt_chart_desc));
-        desc.setTextSize(13);
-        mChart.setDescription(desc);
+//        Description desc = new Description();
+//        desc.setText(getString(R.string.txt_chart_desc));
+//        desc.setTextSize(13);
+//        mChart.setDescription(desc);
+//        mChart.zoomToCenter(2.0f, 2.0f);
+
+        mChart.getXAxis().setPosition(XAxis.XAxisPosition.TOP);
+        mChart.moveViewToX(mCenterX);
+        mChart.animateX(500);
+        mChart.getDescription().setText("");
 
         mChart.setTouchEnabled(true);
         mChart.setDragEnabled(true);
         mChart.setScaleEnabled(true);
-
     }
 
     private void displayChart(ChartViewType chartViewType) {
@@ -188,12 +206,15 @@ public class MainActivity extends AppCompatActivity implements
         switch (chartViewType) {
             case DAY:
                 portfolioList = mPortfolioByDayList;
+                mChartDesc.setText(R.string.txt_chart_desc_daily);
                 break;
             case MONTH:
                 portfolioList = mPortfolioByMonthList;
+                mChartDesc.setText(R.string.txt_chart_desc_monthly);
                 break;
             case QUARTER:
                 portfolioList = mPortfolioByQuarterList;
+                mChartDesc.setText(R.string.txt_chart_desc_quarterly);
                 break;
             default:
                 break;
@@ -205,13 +226,14 @@ public class MainActivity extends AppCompatActivity implements
                 LineDataSet line = new LineDataSet(getValues(chartViewType, i), "Portfolio " + (i + 1));
 
                 line.setFillAlpha(110);
-                line.setColor(i == 0 ? Color.YELLOW : i == 1 ? Color.BLUE : Color.RED);
-                line.setCircleColor(Color.BLACK);
-                line.setLineWidth(1f);
-                line.setCircleRadius(3f);
+                line.setColor(i == 0 ? Color.GREEN : i == 1 ? Color.BLUE : Color.RED);
+                line.setCircleColor(i == 0 ? Color.GREEN : i == 1 ? Color.BLUE : Color.RED);
+                line.setLineWidth(3f);
+                line.setCircleRadius(5f);
                 line.setDrawCircleHole(false);
-                line.setValueTextSize(9f);
+                line.setValueTextSize(14f);
                 line.setDrawFilled(false);
+                line.setDrawHighlightIndicators(true);
 
                 lineList.add(line);
 
@@ -238,62 +260,41 @@ public class MainActivity extends AppCompatActivity implements
                     case QUARTER:
                         return mDateTimeUtil.convertFloatDateToQuarter(value);
                     default:
-                        return null;
+                        return "";
                 }
             }
         });
     }
 
-    @Override
-    public void onChartGestureStart(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
+    private void testStoreDataToFirebase() {
+        FirebaseDatabase database = FirebaseDatabase.getInstance();
+        DatabaseReference portfolioMonthListRef = database.getReference("portfolioByMonthList");
+        portfolioMonthListRef.setValue(mPortfolioByMonthList);
+        portfolioMonthListRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.d("Hello", "What's new in month?");
+            }
 
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
+        DatabaseReference portfolioQuarterListRef = database.getReference("portfolioByQuarterList");
+        portfolioQuarterListRef.setValue(mPortfolioByMonthList);
+        portfolioQuarterListRef.addValueEventListener(new ValueEventListener() {
+            @Override
+            public void onDataChange(DataSnapshot dataSnapshot) {
+                Log.d("Hello", "What's new in quarter?");
+            }
+
+            @Override
+            public void onCancelled(DatabaseError databaseError) {
+
+            }
+        });
     }
-
-    @Override
-    public void onChartGestureEnd(MotionEvent me, ChartTouchListener.ChartGesture lastPerformedGesture) {
-
-    }
-
-    @Override
-    public void onChartLongPressed(MotionEvent me) {
-
-    }
-
-    @Override
-    public void onChartDoubleTapped(MotionEvent me) {
-
-    }
-
-    @Override
-    public void onChartSingleTapped(MotionEvent me) {
-
-    }
-
-    @Override
-    public void onChartFling(MotionEvent me1, MotionEvent me2, float velocityX, float velocityY) {
-
-    }
-
-    @Override
-    public void onChartScale(MotionEvent me, float scaleX, float scaleY) {
-
-    }
-
-    @Override
-    public void onChartTranslate(MotionEvent me, float dX, float dY) {
-
-    }
-
-    @Override
-    public void onValueSelected(Entry e, Highlight h) {
-
-    }
-
-    @Override
-    public void onNothingSelected() {
-
-    }
-
 
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
@@ -317,5 +318,16 @@ public class MainActivity extends AppCompatActivity implements
             default:
                 return super.onOptionsItemSelected(item);
         }
+    }
+
+    @Override
+    public void onValueSelected(Entry e, Highlight h) {
+        Toast.makeText(this, mDateTimeUtil.convertFloatDateToStringDate(e.getX()),
+                Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public void onNothingSelected() {
+
     }
 }
