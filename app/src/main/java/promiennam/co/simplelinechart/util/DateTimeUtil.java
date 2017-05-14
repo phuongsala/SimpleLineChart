@@ -36,7 +36,7 @@ public class DateTimeUtil {
 
     public String convertFloatDateToMonth(float floatDate) {
         Date date = new Date((long) floatDate);
-        DateFormat dateFormat = new SimpleDateFormat("MMM yyyy");
+        DateFormat dateFormat = new SimpleDateFormat("MMM");
         return dateFormat.format(date);
     }
 
@@ -129,6 +129,5 @@ public class DateTimeUtil {
         }
         return false;
     }
-
 
 }
