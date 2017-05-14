@@ -114,6 +114,7 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
     }
 
     private void setupPortfolioTotalForEachDay() {
+
         mPortfolioTotalForEachDay = new Portfolio();
 
         List<Nav> navTotalList = new ArrayList<>();
@@ -123,7 +124,13 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
             List<Nav> navList = mPortfolioByDayList.get(i).getNavList();
             if (navList != null) {
                 if (i == 0) {
-                    navTotalList.addAll(navList);
+                    // this line below should work, but i don't know why it doesn't work correctly
+                    // navTotalList.addAll(navList);
+                    //---------------------------------------
+                    // just replace by these lines below T_T
+                    for (int j = 0; j < navList.size(); j++){
+                        navTotalList.add(new Nav(navList.get(j).getDate(), navList.get(j).getAmount()));
+                    }
                 } else {
                     for (int j = 0; j < navList.size(); j++) {
                         boolean flag = false;
@@ -133,7 +140,7 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
                                 flag = true;
                             }
                         }
-                        if (!flag){
+                        if (!flag) {
                             navTotalList.add(navList.get(j));
                         }
                     }
@@ -146,7 +153,7 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
         mPortfolioTotalForEachDay.setNavList(navTotalList);
 
         // add portfolio total to mPortfolioByDayList
-//        mPortfolioByDayList.add(mPortfolioTotalForEachDay);
+        mPortfolioByDayList.add(mPortfolioTotalForEachDay);
     }
 
     private void setupPortfolioByMonthAndQuarter() {
@@ -207,6 +214,8 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
                 break;
         }
 
+        Log.d("size nav ", "" + navList.size());
+
         if (navList != null) {
             for (int i = 0; i < navList.size(); i++) {
                 float timestamp = mDateTimeUtil.convertDateStringToMillis(navList.get(i).getDate());
@@ -229,6 +238,7 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
 
         mChart.getXAxis().setPosition(XAxis.XAxisPosition.TOP);
         mChart.moveViewToX(mCenterX);
+
         mChart.animateX(500);
         mChart.getDescription().setText("");
 
@@ -262,15 +272,17 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
                 break;
         }
 
+        Log.d("size portfolio", "" + portfolioList.size());
+
         if (portfolioList != null) {
             for (int i = 0; i < portfolioList.size(); i++) {
 
                 LineDataSet line = new LineDataSet(getValues(chartViewType, i),
-                        i > 2 ? "Total" : "Portfolio " + (i + 1));
+                        i < 3 ?  "Portfolio " + (i + 1) : "Total");
 
                 line.setFillAlpha(110);
-                line.setColor(i == 0 ? Color.GREEN : i == 1 ? Color.BLUE : i == 2 ? Color.RED : Color.BLACK);
-                line.setCircleColor(i == 0 ? Color.GREEN : i == 1 ? Color.BLUE : i == 2 ? Color.RED : Color.BLACK);
+                line.setColor(randomColor(i));
+                line.setCircleColor(randomColor(i));
                 line.setLineWidth(3f);
                 line.setCircleRadius(5f);
                 line.setDrawCircleHole(false);
@@ -282,6 +294,8 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
 
             }
 
+            Log.d("size line list ", "" + lineList.size());
+
             LineData data = new LineData(lineList);
 
             // set data
@@ -289,6 +303,10 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
 
             mChart.invalidate();
         }
+    }
+
+    private int randomColor(int i) {
+        return i == 0 ? Color.GREEN : i == 1 ? Color.BLUE : i == 2 ? Color.RED : Color.BLACK;
     }
 
     private void formatXValues(final ChartViewType chartViewType) {
@@ -325,7 +343,7 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
             }
         });
         DatabaseReference portfolioQuarterListRef = database.getReference("portfolioByQuarterList");
-        portfolioQuarterListRef.setValue(mPortfolioByMonthList);
+        portfolioQuarterListRef.setValue(mPortfolioByQuarterList);
         portfolioQuarterListRef.addValueEventListener(new ValueEventListener() {
             @Override
             public void onDataChange(DataSnapshot dataSnapshot) {
