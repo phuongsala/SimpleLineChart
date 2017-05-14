@@ -33,6 +33,7 @@ import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Date;
 import java.util.List;
 
@@ -42,14 +43,16 @@ import promiennam.co.simplelinechart.models.Nav;
 import promiennam.co.simplelinechart.models.Portfolio;
 import promiennam.co.simplelinechart.util.DateTimeUtil;
 import promiennam.co.simplelinechart.util.DisplayUtil;
+import promiennam.co.simplelinechart.util.SortByDateUtil;
 
 public class HomeActivity extends AppCompatActivity implements OnChartValueSelectedListener {
 
     private LineChart mChart;
     private TextView mChartDesc;
-    private List<Portfolio> mPortfolioByDayList; // by day
-    private List<Portfolio> mPortfolioByMonthList; // by month
+    private List<Portfolio> mPortfolioByDayList;     // by day
+    private List<Portfolio> mPortfolioByMonthList;   // by month
     private List<Portfolio> mPortfolioByQuarterList; // by quarter
+    private Portfolio mPortfolioTotalForEachDay; // total
     private DateTimeUtil mDateTimeUtil;
 
     private float mCenterX; // centerX of screen
@@ -63,7 +66,7 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
         mChart.setDrawGridBackground(true);
         mChart.setOnChartValueSelectedListener(this);
 
-        mChartDesc = (TextView)findViewById(R.id.txt_chart_desc);
+        mChartDesc = (TextView) findViewById(R.id.txt_chart_desc);
 
         mDateTimeUtil = new DateTimeUtil();
 
@@ -101,10 +104,49 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
             }.getType());
         }
 
+        // setup total portfolio for each day
+        setupPortfolioTotalForEachDay();
+
         // setup portfolio by month, quarter
         setupPortfolioByMonthAndQuarter();
 
         return mPortfolioByDayList;
+    }
+
+    private void setupPortfolioTotalForEachDay() {
+        mPortfolioTotalForEachDay = new Portfolio();
+
+        List<Nav> navTotalList = new ArrayList<>();
+
+        // handle update date for each nav
+        for (int i = 0; i < mPortfolioByDayList.size(); i++) {
+            List<Nav> navList = mPortfolioByDayList.get(i).getNavList();
+            if (navList != null) {
+                if (i == 0) {
+                    navTotalList.addAll(navList);
+                } else {
+                    for (int j = 0; j < navList.size(); j++) {
+                        boolean flag = false;
+                        for (Nav nav : navTotalList) {
+                            if (nav.getDate().equals(navList.get(j).getDate())) {
+                                nav.setAmount(nav.getAmount() + navList.get(j).getAmount());
+                                flag = true;
+                            }
+                        }
+                        if (!flag){
+                            navTotalList.add(navList.get(j));
+                        }
+                    }
+                }
+            }
+        }
+
+        Collections.sort(navTotalList, new SortByDateUtil());
+
+        mPortfolioTotalForEachDay.setNavList(navTotalList);
+
+        // add portfolio total to mPortfolioByDayList
+//        mPortfolioByDayList.add(mPortfolioTotalForEachDay);
     }
 
     private void setupPortfolioByMonthAndQuarter() {
@@ -223,11 +265,12 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
         if (portfolioList != null) {
             for (int i = 0; i < portfolioList.size(); i++) {
 
-                LineDataSet line = new LineDataSet(getValues(chartViewType, i), "Portfolio " + (i + 1));
+                LineDataSet line = new LineDataSet(getValues(chartViewType, i),
+                        i > 2 ? "Total" : "Portfolio " + (i + 1));
 
                 line.setFillAlpha(110);
-                line.setColor(i == 0 ? Color.GREEN : i == 1 ? Color.BLUE : Color.RED);
-                line.setCircleColor(i == 0 ? Color.GREEN : i == 1 ? Color.BLUE : Color.RED);
+                line.setColor(i == 0 ? Color.GREEN : i == 1 ? Color.BLUE : i == 2 ? Color.RED : Color.BLACK);
+                line.setCircleColor(i == 0 ? Color.GREEN : i == 1 ? Color.BLUE : i == 2 ? Color.RED : Color.BLACK);
                 line.setLineWidth(3f);
                 line.setCircleRadius(5f);
                 line.setDrawCircleHole(false);
