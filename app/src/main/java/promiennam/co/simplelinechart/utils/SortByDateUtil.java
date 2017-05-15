@@ -1,4 +1,4 @@
-package promiennam.co.simplelinechart.util;
+package promiennam.co.simplelinechart.utils;
 
 import java.util.Comparator;
 import java.util.Date;

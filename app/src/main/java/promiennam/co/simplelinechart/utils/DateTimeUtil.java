@@ -1,6 +1,4 @@
-package promiennam.co.simplelinechart.util;
-
-import android.util.Log;
+package promiennam.co.simplelinechart.utils;
 
 import java.text.DateFormat;
 import java.text.ParseException;
@@ -14,11 +12,7 @@ import java.util.Date;
 
 public class DateTimeUtil {
 
-    public DateTimeUtil() {
-
-    }
-
-    public long convertDateStringToMillis(String strDate) {
+    public static long convertDateStringToMillis(String strDate) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
             return simpleDateFormat.parse(strDate).getTime();
@@ -28,19 +22,19 @@ public class DateTimeUtil {
         }
     }
 
-    public String convertFloatDateToStringDate(float floatDate) {
+    public static String convertFloatDateToStringDate(float floatDate) {
         Date date = new Date((long) floatDate);
         DateFormat dateFormat = new SimpleDateFormat("MMM-dd-yyyy");
         return dateFormat.format(date);
     }
 
-    public String convertFloatDateToMonth(float floatDate) {
+    public static String convertFloatDateToMonth(float floatDate) {
         Date date = new Date((long) floatDate);
         DateFormat dateFormat = new SimpleDateFormat("MMM");
         return dateFormat.format(date);
     }
 
-    public String convertFloatDateToQuarter(float floatDate) {
+    public static String convertFloatDateToQuarter(float floatDate) {
         Date date = new Date((long) floatDate);
         DateFormat dateFormat = new SimpleDateFormat("MMM");
         String rs = dateFormat.format(date);
@@ -58,7 +52,7 @@ public class DateTimeUtil {
         return "";
     }
 
-    public Date convertStringDateToDate(String strDate) {
+    public static Date convertStringDateToDate(String strDate) {
         SimpleDateFormat simpleDateFormat = new SimpleDateFormat("yyyy-MM-dd");
         try {
             Date date = simpleDateFormat.parse(strDate);
@@ -69,7 +63,7 @@ public class DateTimeUtil {
         }
     }
 
-    public boolean isTheLastDayOfMonth(Date date) {
+    public static boolean isTheLastDayOfMonth(Date date) {
         if (date != null) {
             Calendar c = Calendar.getInstance();
             c.setTime(date);
@@ -106,21 +100,21 @@ public class DateTimeUtil {
         return false;
     }
 
-    public boolean isLeapYear(int year) {
+    public static boolean isLeapYear(int year) {
         if ((year % 400 == 0) || ((year % 4 == 0) && (year % 100 != 0))) {
             return true;
         }
         return false;
     }
 
-    public boolean isQuarterMonth(int month) {
+    public static boolean isQuarterMonth(int month) {
         if (month == 3 || month == 6 || month == 9 || month == 12) {
             return true;
         }
         return false;
     }
 
-    public boolean isQuarterMonth(Date date) {
+    public static boolean isQuarterMonth(Date date) {
         Calendar c = Calendar.getInstance();
         c.setTime(date);
         int month = c.get(Calendar.MONTH) + 1;

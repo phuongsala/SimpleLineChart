@@ -5,7 +5,7 @@ package promiennam.co.simplelinechart.enums;
  */
 
 public enum ChartViewType {
-    DAY,
-    MONTH,
-    QUARTER
+    DAILY,
+    MONTHLY,
+    QUARTERLY
 }
