@@ -16,7 +16,6 @@ import com.github.mikephil.charting.data.Entry;
 import com.github.mikephil.charting.highlight.Highlight;
 import com.github.mikephil.charting.listener.OnChartValueSelectedListener;
 
-import java.io.InputStream;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
@@ -25,6 +24,7 @@ import java.util.List;
 import promiennam.co.simplelinechart.R;
 import promiennam.co.simplelinechart.enums.ChartViewType;
 import promiennam.co.simplelinechart.helpers.ChartViewHelper;
+import promiennam.co.simplelinechart.helpers.FirebaseDataHelper;
 import promiennam.co.simplelinechart.interfaces.ILoadDataListener;
 import promiennam.co.simplelinechart.models.Nav;
 import promiennam.co.simplelinechart.models.Portfolio;
@@ -36,6 +36,7 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
 
     private List<Portfolio> mPortfolioByDayList;  //view by daily
     private ChartViewHelper mChartViewHelper;
+    private FirebaseDataHelper mDatabaseHelper;
 
     private ProgressBar progressBar;
 
@@ -43,62 +44,77 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_home);
-
         // chart view
         LineChart chart = (LineChart) findViewById(R.id.line_chart);
-        chart.setDrawGridBackground(true);
-        chart.setOnChartValueSelectedListener(this);
-
         // chart description
         TextView chartDesc = (TextView) findViewById(R.id.txt_chart_desc);
-
         // initialize chart view helper
         mChartViewHelper = new ChartViewHelper(chart, chartDesc);
-
+        // initialize database helper
+        mDatabaseHelper = new FirebaseDataHelper();
         // progress bar
         progressBar = (ProgressBar) findViewById(R.id.progress_bar);
-
         // configure chart
         configChart(chart);
-
         // load data
         loadData();
     }
 
+    private void configChart(LineChart chart) {
+        chart.setDrawGridBackground(true);
+        chart.setOnChartValueSelectedListener(this);
+
+        Legend legend = chart.getLegend();
+        legend.setForm(Legend.LegendForm.LINE);
+
+        chart.animateX(500);
+        chart.getDescription().setText("");
+        chart.setNoDataText("");
+
+        chart.setTouchEnabled(true);
+        chart.setDragEnabled(true);
+        chart.setScaleEnabled(true);
+    }
+
     private void loadData() {
-        InputStream inputStream = getResources().openRawResource(R.raw.data_json);
-        LoadDataTask loadDataTask = new LoadDataTask(inputStream, new ILoadDataListener() {
+
+        new LoadDataTask(new ILoadDataListener() {
             @Override
-            public void onSuccess(List<Portfolio> portfolioList) {
-                if (portfolioList != null && !portfolioList.isEmpty()) {
-                    // set portfolio list
-                    mPortfolioByDayList = portfolioList;
-
-                    // get portfolio total
-                    Portfolio portfolioTotalByDay = getPortfolioTotalByDay(portfolioList);
-
-                    // add portfolio total to portfolio list
-                    mPortfolioByDayList.add(portfolioTotalByDay);
-
-                    // display chart
-                    mChartViewHelper.setPortfolioByDayList(mPortfolioByDayList);
-                    mChartViewHelper.displayChart(ChartViewType.DAILY); // view by daily at the first time
-
-                    // hide progress bar
-                    progressBar.setVisibility(View.GONE);
-                }
+            public void onCompleted(List<Portfolio> portfolioList) {
+                handleOnLoadDataCompleted(portfolioList);
             }
 
             @Override
             public void onError() {
                 // handle error
             }
-        });
-        loadDataTask.execute();
+        }).execute(getResources().openRawResource(R.raw.data_json));
+
+    }
+
+    private void handleOnLoadDataCompleted(List<Portfolio> portfolioList) {
+        if (portfolioList != null && !portfolioList.isEmpty()) {
+            // set portfolio list
+            mPortfolioByDayList = portfolioList;
+            // get portfolio total by calculate from the portfolio list
+            Portfolio portfolioTotalByDay = getPortfolioTotalByDay(portfolioList);
+            // add portfolio total to portfolio list
+            mPortfolioByDayList.add(portfolioTotalByDay);
+            // display chart
+            mChartViewHelper.setPortfolioByDayList(mPortfolioByDayList);
+            mChartViewHelper.displayChart(ChartViewType.DAILY); // view by daily at the first time
+            // hide progress bar
+            progressBar.setVisibility(View.GONE);
+            //--------------------------------
+            // store database to firebase
+            //--------------------------------
+            mDatabaseHelper.savePortfolios(mPortfolioByDayList);
+        }
     }
 
     private Portfolio getPortfolioTotalByDay(List<Portfolio> portfolioByDayList) {
         Portfolio portfolioTotalByDay = new Portfolio();
+        portfolioTotalByDay.setId("portfolio_total_id");
         List<Nav> navTotalList = new ArrayList<>();
 
         for (int i = 0; i < portfolioByDayList.size(); i++) {
@@ -176,19 +192,6 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
         return portfolioByQuarterList;
     }
 
-    private void configChart(LineChart chart) {
-        Legend legend = chart.getLegend();
-        legend.setForm(Legend.LegendForm.LINE);
-
-        chart.animateX(500);
-        chart.getDescription().setText("");
-        chart.setNoDataText("");
-
-        chart.setTouchEnabled(true);
-        chart.setDragEnabled(true);
-        chart.setScaleEnabled(true);
-    }
-
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         MenuInflater inflater = getMenuInflater();
@@ -222,6 +225,10 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
             progressBar.setVisibility(View.VISIBLE);
             mChartViewHelper.setPortfolioByMonthList(getPortfolioByMonthList(mPortfolioByDayList));
             progressBar.setVisibility(View.GONE);
+            //--------------------------------
+            // store database to firebase
+            //--------------------------------
+            mDatabaseHelper.savePortfolios(mChartViewHelper.getPortfolioByMonthList());
         }
         mChartViewHelper.displayChart(ChartViewType.MONTHLY);
     }
@@ -231,6 +238,10 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
             progressBar.setVisibility(View.VISIBLE);
             mChartViewHelper.setPortfolioByQuarterList(getPortfolioByQuarterList(mPortfolioByDayList));
             progressBar.setVisibility(View.GONE);
+            //--------------------------------
+            // store database to firebase
+            //--------------------------------
+            mDatabaseHelper.savePortfolios(mChartViewHelper.getPortfolioByQuarterList());
         }
         mChartViewHelper.displayChart(ChartViewType.QUARTERLY);
     }

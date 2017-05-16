@@ -18,14 +18,12 @@ import promiennam.co.simplelinechart.models.Portfolio;
  * Created by Phuong on 15-May-17.
  */
 
-public class LoadDataTask extends AsyncTask<Void, Void, List<Portfolio>> {
+public class LoadDataTask extends AsyncTask<InputStream, Void, List<Portfolio>> {
 
-    private InputStream inputStream;
-    private ILoadDataListener callback;
+    private ILoadDataListener mCallback;
 
-    public LoadDataTask(InputStream inputStream, ILoadDataListener callback) {
-        this.inputStream = inputStream;
-        this.callback = callback;
+    public LoadDataTask(ILoadDataListener callback) {
+        mCallback = callback;
     }
 
     @Override
@@ -34,16 +32,16 @@ public class LoadDataTask extends AsyncTask<Void, Void, List<Portfolio>> {
     }
 
     @Override
-    protected List<Portfolio> doInBackground(Void... voids) {
+    protected List<Portfolio> doInBackground(InputStream... inputStreams) {
         ByteArrayOutputStream output = new ByteArrayOutputStream();
         int index;
         try {
-            index = inputStream.read();
+            index = inputStreams[0].read();
             while (index != -1) {
                 output.write(index);
-                index = inputStream.read();
+                index = inputStreams[0].read();
             }
-            inputStream.close();
+            inputStreams[0].close();
         } catch (IOException e) {
             e.printStackTrace();
         }
@@ -57,8 +55,8 @@ public class LoadDataTask extends AsyncTask<Void, Void, List<Portfolio>> {
     @Override
     protected void onPostExecute(List<Portfolio> portfolioList) {
         super.onPostExecute(portfolioList);
-        if (callback != null) {
-            callback.onSuccess(portfolioList);
+        if (mCallback != null) {
+            mCallback.onCompleted(portfolioList);
         }
     }
 }

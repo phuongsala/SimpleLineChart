@@ -1,9 +1,12 @@
 package promiennam.co.simplelinechart.models;
 
+import com.google.firebase.database.IgnoreExtraProperties;
+
 /**
  * Created by Phuong on 13-May-17.
  */
 
+@IgnoreExtraProperties
 public class Nav{
 
     private String date;
