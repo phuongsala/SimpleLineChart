@@ -86,7 +86,7 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
 
             @Override
             public void onError() {
-                // handle error
+                mChartViewHelper.showNoDataText();
             }
         }).execute(getResources().openRawResource(R.raw.data_json));
 
@@ -100,15 +100,10 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
             Portfolio portfolioTotalByDay = getPortfolioTotalByDay(portfolioList);
             // add portfolio total to portfolio list
             mPortfolioByDayList.add(portfolioTotalByDay);
-            // display chart
+            // set portfolio by day list for chart view helper
             mChartViewHelper.setPortfolioByDayList(mPortfolioByDayList);
-            mChartViewHelper.displayChart(ChartViewType.DAILY); // view by daily at the first time
-            // hide progress bar
-            progressBar.setVisibility(View.GONE);
-            //--------------------------------
-            // store database to firebase
-            //--------------------------------
-            mDatabaseHelper.savePortfolios(mPortfolioByDayList);
+            // display chart daily at the first time
+            displayChartDaily();
         }
     }
 
@@ -218,6 +213,12 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
 
     private void displayChartDaily() {
         mChartViewHelper.displayChart(ChartViewType.DAILY);
+        // hide progress bar
+        progressBar.setVisibility(View.GONE);
+        //--------------------------------
+        // store database to firebase
+        //--------------------------------
+        mDatabaseHelper.savePortfolios(mPortfolioByDayList);
     }
 
     private void displayChartMonthly() {

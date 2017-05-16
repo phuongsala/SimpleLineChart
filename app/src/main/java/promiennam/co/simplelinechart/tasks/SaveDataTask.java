@@ -10,6 +10,7 @@ import com.google.firebase.database.ValueEventListener;
 
 import java.util.List;
 
+import promiennam.co.simplelinechart.interfaces.ISaveDataListener;
 import promiennam.co.simplelinechart.models.Portfolio;
 
 /**
@@ -21,9 +22,11 @@ public class SaveDataTask extends AsyncTask<List<Portfolio>, Void, Void> {
     private static final String TAG = SaveDataTask.class.getSimpleName();
 
     private DatabaseReference mDatabase;
+    private ISaveDataListener mCallback;
 
-    public SaveDataTask(DatabaseReference database) {
+    public SaveDataTask(DatabaseReference database, ISaveDataListener callback) {
         mDatabase = database;
+        mCallback = callback;
     }
 
     @Override
@@ -34,10 +37,9 @@ public class SaveDataTask extends AsyncTask<List<Portfolio>, Void, Void> {
 
     @Override
     protected Void doInBackground(List<Portfolio>... portfolioList) {
-
         for (int i = 0; i < portfolioList[0].size(); i++) {
-            Portfolio portfolio = portfolioList[0].get(i);
             // add new child
+            Portfolio portfolio = portfolioList[0].get(i);
             mDatabase.child("portfolios");
             mDatabase.setValue(portfolio);
 
@@ -59,12 +61,9 @@ public class SaveDataTask extends AsyncTask<List<Portfolio>, Void, Void> {
                 }
             });
         }
+        if (mCallback != null) {
+            mCallback.onSuccess();
+        }
         return null;
-    }
-
-    @Override
-    protected void onPostExecute(Void aVoid) {
-        super.onPostExecute(aVoid);
-        Log.d(TAG, "save data completed");
     }
 }

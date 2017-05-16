@@ -43,6 +43,11 @@ public class LoadDataTask extends AsyncTask<InputStream, Void, List<Portfolio>> 
             }
             inputStreams[0].close();
         } catch (IOException e) {
+            try {
+                inputStreams[0].close();
+            } catch (IOException e1) {
+                e1.printStackTrace();
+            }
             e.printStackTrace();
         }
         if (output.toString() != null) {

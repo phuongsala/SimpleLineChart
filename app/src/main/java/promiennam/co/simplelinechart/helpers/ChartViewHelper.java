@@ -68,7 +68,7 @@ public class ChartViewHelper {
             // draw chart
             mChart.invalidate();
         } else {
-            mChart.setNoDataText(mChart.getContext().getString(R.string.error_load_data));
+            showNoDataText();
         }
     }
 
@@ -132,6 +132,10 @@ public class ChartViewHelper {
 
     private int randomColor(int i) {
         return i == 0 ? Color.GREEN : i == 1 ? Color.BLUE : i == 2 ? Color.RED : Color.BLACK;
+    }
+
+    public void showNoDataText(){
+        mChart.setNoDataText(mChart.getContext().getString(R.string.error_load_data));
     }
 
     public void setPortfolioByDayList(List<Portfolio> mPortfolioByDayList) {
