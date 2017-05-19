@@ -96,7 +96,7 @@ public class ChartViewHelper {
             ArrayList<ILineDataSet> lineList = new ArrayList<>();
             // add each line to line list
             for (int i = 0; i < portfolioList.size(); i++) {
-                LineDataSet line = new LineDataSet(getEntryList(portfolioList.get(i).getNavList()),
+                LineDataSet line = new LineDataSet(getEntryList(portfolioList.get(i).getNavs()),
                         i < 3 ? "Portfolio " + (i + 1) : "Total");
 
                 line.setFillAlpha(110);

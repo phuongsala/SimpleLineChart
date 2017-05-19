@@ -1,7 +1,5 @@
 package promiennam.co.simplelinechart.models;
 
-import com.google.gson.annotations.SerializedName;
-
 import java.util.List;
 
 /**
@@ -10,33 +8,30 @@ import java.util.List;
 
 public class Portfolio {
 
-    @SerializedName("portfolioId")
-    private String id;
-
-    @SerializedName("navs")
-    private List<Nav> navList;
+    private String portfolioId;
+    private List<Nav> navs;
 
     public Portfolio() {
     }
 
-    public Portfolio(String id, List<Nav> navList) {
-        this.id = id;
-        this.navList = navList;
+    public Portfolio(String portfolioId, List<Nav> navs) {
+        this.portfolioId = portfolioId;
+        this.navs = navs;
     }
 
-    public String getId() {
-        return id;
+    public String getPortfolioId() {
+        return portfolioId;
     }
 
-    public void setId(String id) {
-        this.id = id;
+    public void setPortfolioId(String portfolioId) {
+        this.portfolioId = portfolioId;
     }
 
-    public List<Nav> getNavList() {
-        return navList;
+    public List<Nav> getNavs() {
+        return navs;
     }
 
-    public void setNavList(List<Nav> navList) {
-        this.navList = navList;
+    public void setNavs(List<Nav> navs) {
+        this.navs = navs;
     }
 }

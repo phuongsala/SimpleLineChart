@@ -3,13 +3,13 @@ package promiennam.co.simplelinechart.tasks;
 import android.os.AsyncTask;
 import android.util.Log;
 
-import com.google.firebase.database.DataSnapshot;
-import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
-import com.google.firebase.database.ValueEventListener;
+import com.google.firebase.database.FirebaseDatabase;
 
+import java.util.ArrayList;
 import java.util.List;
 
+import promiennam.co.simplelinechart.enums.ChartViewType;
 import promiennam.co.simplelinechart.interfaces.ISaveDataListener;
 import promiennam.co.simplelinechart.models.Portfolio;
 
@@ -21,11 +21,9 @@ public class SaveDataTask extends AsyncTask<List<Portfolio>, Void, Void> {
 
     private static final String TAG = SaveDataTask.class.getSimpleName();
 
-    private DatabaseReference mDatabase;
     private ISaveDataListener mCallback;
 
-    public SaveDataTask(DatabaseReference database, ISaveDataListener callback) {
-        mDatabase = database;
+    public SaveDataTask(ISaveDataListener callback) {
         mCallback = callback;
     }
 
@@ -37,33 +35,23 @@ public class SaveDataTask extends AsyncTask<List<Portfolio>, Void, Void> {
 
     @Override
     protected Void doInBackground(List<Portfolio>... portfolioList) {
-        for (int i = 0; i < portfolioList[0].size(); i++) {
-            // add new child
-            Portfolio portfolio = portfolioList[0].get(i);
-            mDatabase.child("portfolios");
-            mDatabase.setValue(portfolio);
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance()
+                .getReference("portfolios_by_day");
 
-            // listener on child value changed
-            mDatabase.addListenerForSingleValueEvent(new ValueEventListener() {
-                @Override
-                public void onDataChange(DataSnapshot dataSnapshot) {
-                    Portfolio portfolio = dataSnapshot.getValue(Portfolio.class);
-                    if (portfolio != null) {
-                        Log.d(TAG, "portfolio " + portfolio);
-                    } else {
-                        Log.d(TAG, "portfolio is null");
-                    }
-                }
-
-                @Override
-                public void onCancelled(DatabaseError databaseError) {
-
-                }
-            });
+        if (databaseReference != null) {
+            // just store all portfolio except the total
+            ArrayList<Portfolio> needSavingPortfolioList = new ArrayList<>();
+            for (int i = 0; i < portfolioList[0].size() - 1; i++) {
+                needSavingPortfolioList.add(new Portfolio(portfolioList[0].get(i).getPortfolioId(),
+                        portfolioList[0].get(i).getNavs()));
+            }
+            databaseReference.setValue(needSavingPortfolioList);
         }
+
         if (mCallback != null) {
             mCallback.onSuccess();
         }
+
         return null;
     }
 }

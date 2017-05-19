@@ -29,6 +29,7 @@ import promiennam.co.simplelinechart.interfaces.ILoadDataListener;
 import promiennam.co.simplelinechart.models.Nav;
 import promiennam.co.simplelinechart.models.Portfolio;
 import promiennam.co.simplelinechart.tasks.LoadDataTask;
+import promiennam.co.simplelinechart.tasks.LoadDataTask2;
 import promiennam.co.simplelinechart.utils.DateTimeUtil;
 import promiennam.co.simplelinechart.utils.SortByDateUtil;
 
@@ -57,7 +58,8 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
         // configure chart
         configChart(chart);
         // load data
-        loadData();
+//        loadDataFromRaw();
+        loadDataFromFirebase();
     }
 
     private void configChart(LineChart chart) {
@@ -76,11 +78,25 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
         chart.setScaleEnabled(true);
     }
 
-    private void loadData() {
+    private void loadDataFromFirebase() {
+        new LoadDataTask2(new ILoadDataListener() {
+            @Override
+            public void onComplete(List<Portfolio> portfolioList) {
+                handleOnLoadDataCompleted(portfolioList);
+            }
+
+            @Override
+            public void onError() {
+
+            }
+        }).load();
+    }
+
+    private void loadDataFromRaw() {
 
         new LoadDataTask(new ILoadDataListener() {
             @Override
-            public void onCompleted(List<Portfolio> portfolioList) {
+            public void onComplete(List<Portfolio> portfolioList) {
                 handleOnLoadDataCompleted(portfolioList);
             }
 
@@ -102,16 +118,18 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
             mPortfolioByDayList.add(portfolioTotalByDay);
             // display chart daily at the first time
             displayChartDaily();
+        } else {
+            mChartViewHelper.showNoDataText();
         }
     }
 
     private Portfolio getPortfolioTotalByDay(List<Portfolio> portfolioByDayList) {
         Portfolio portfolioTotalByDay = new Portfolio();
-        portfolioTotalByDay.setId("portfolio_total_id");
+        portfolioTotalByDay.setPortfolioId("portfolio_total_id");
         List<Nav> navTotalList = new ArrayList<>();
 
         for (int i = 0; i < portfolioByDayList.size(); i++) {
-            List<Nav> navList = portfolioByDayList.get(i).getNavList();
+            List<Nav> navList = portfolioByDayList.get(i).getNavs();
             if (navList != null) {
                 if (i == 0) {
                     for (int j = 0; j < navList.size(); j++) {
@@ -134,7 +152,7 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
             }
         }
         Collections.sort(navTotalList, new SortByDateUtil());
-        portfolioTotalByDay.setNavList(navTotalList);
+        portfolioTotalByDay.setNavs(navTotalList);
 
         return portfolioTotalByDay;
     }
@@ -142,7 +160,7 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
     private List<Portfolio> getPortfolioByMonthList(List<Portfolio> portfolioByDayList) {
         List<Portfolio> portfolioByMonthList = new ArrayList<>();
         for (int i = 0; i < portfolioByDayList.size(); i++) {
-            List<Nav> navByDayList = portfolioByDayList.get(i).getNavList();
+            List<Nav> navByDayList = portfolioByDayList.get(i).getNavs();
             if (navByDayList != null) {
                 List<Nav> navByMonthList = new ArrayList<>();
                 for (int j = 0; j < navByDayList.size(); j++) {
@@ -154,7 +172,7 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
                     }
                 }
                 Portfolio portfolioByMonth = new Portfolio();
-                portfolioByMonth.setNavList(navByMonthList);
+                portfolioByMonth.setNavs(navByMonthList);
                 portfolioByMonthList.add(portfolioByMonth);
             }
         }
@@ -164,7 +182,7 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
     private List<Portfolio> getPortfolioByQuarterList(List<Portfolio> portfolioByDayList) {
         List<Portfolio> portfolioByQuarterList = new ArrayList<>();
         for (int i = 0; i < portfolioByDayList.size(); i++) {
-            List<Nav> navByDayList = portfolioByDayList.get(i).getNavList();
+            List<Nav> navByDayList = portfolioByDayList.get(i).getNavs();
             if (navByDayList != null) {
                 List<Nav> navByQuarterList = new ArrayList<>();
                 for (int j = 0; j < navByDayList.size(); j++) {
@@ -178,7 +196,7 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
                     }
                 }
                 Portfolio portfolioByQuarter = new Portfolio();
-                portfolioByQuarter.setNavList(navByQuarterList);
+                portfolioByQuarter.setNavs(navByQuarterList);
                 portfolioByQuarterList.add(portfolioByQuarter);
             }
         }
@@ -228,10 +246,6 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
             progressBar.setVisibility(View.VISIBLE);
             mChartViewHelper.setPortfolioByMonthList(getPortfolioByMonthList(mPortfolioByDayList));
             progressBar.setVisibility(View.GONE);
-            //--------------------------------
-            // store database to firebase
-            //--------------------------------
-            mDatabaseHelper.savePortfolios(mChartViewHelper.getPortfolioByMonthList());
         }
         mChartViewHelper.displayChart(ChartViewType.MONTHLY);
     }
@@ -241,10 +255,6 @@ public class HomeActivity extends AppCompatActivity implements OnChartValueSelec
             progressBar.setVisibility(View.VISIBLE);
             mChartViewHelper.setPortfolioByQuarterList(getPortfolioByQuarterList(mPortfolioByDayList));
             progressBar.setVisibility(View.GONE);
-            //--------------------------------
-            // store database to firebase
-            //--------------------------------
-            mDatabaseHelper.savePortfolios(mChartViewHelper.getPortfolioByQuarterList());
         }
         mChartViewHelper.displayChart(ChartViewType.QUARTERLY);
     }

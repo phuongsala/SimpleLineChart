@@ -7,6 +7,7 @@ import com.google.firebase.database.FirebaseDatabase;
 
 import java.util.List;
 
+import promiennam.co.simplelinechart.enums.ChartViewType;
 import promiennam.co.simplelinechart.interfaces.ISaveDataListener;
 import promiennam.co.simplelinechart.models.Portfolio;
 import promiennam.co.simplelinechart.tasks.SaveDataTask;
@@ -19,15 +20,12 @@ public class FirebaseDataHelper implements ISaveDataListener{
 
     private static final String TAG = FirebaseDataHelper.class.getSimpleName();
 
-    private DatabaseReference mDatabase;
-
     public FirebaseDataHelper() {
-        mDatabase = FirebaseDatabase.getInstance().getReference();
     }
 
     public void savePortfolios(List<Portfolio> portfolioList) {
         if (portfolioList != null) {
-            new SaveDataTask(mDatabase, this).execute(portfolioList);
+            new SaveDataTask(this).execute(portfolioList);
         }
     }
 

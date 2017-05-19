@@ -10,7 +10,7 @@ import promiennam.co.simplelinechart.models.Portfolio;
 
 public interface ILoadDataListener {
 
-    void onCompleted(List<Portfolio> portfolioList);
+    void onComplete(List<Portfolio> portfolioList);
 
     void onError();
 }

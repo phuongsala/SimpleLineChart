@@ -61,7 +61,7 @@ public class LoadDataTask extends AsyncTask<InputStream, Void, List<Portfolio>> 
     protected void onPostExecute(List<Portfolio> portfolioList) {
         super.onPostExecute(portfolioList);
         if (mCallback != null) {
-            mCallback.onCompleted(portfolioList);
+            mCallback.onComplete(portfolioList);
         }
     }
 }
