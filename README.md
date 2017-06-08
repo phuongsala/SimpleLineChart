@@ -1,5 +1,5 @@
 # SimpleLineChart
-Simple Android application that can store, read in and display data as line chart.
+Simple Android application that can store, read data with Google Firebase and display on line chart.
 
 Each circle point on the chart shows the amount of portfolios, you can see the date (toast) by tap on this.
 
